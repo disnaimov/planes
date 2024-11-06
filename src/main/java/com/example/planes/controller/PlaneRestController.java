@@ -40,8 +40,8 @@ public class PlaneRestController {
     }
 
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
-    public ResponseEntity<List<PlaneResponseDto>> getWithFilters(@RequestBody PlaneFilterDto filterDto) {
-        return new ResponseEntity<>(planeService.filterPlanes(filterDto), OK);
+    public ResponseEntity<List<PlaneResponseDto>> getWithFilters(@RequestParam(required = false) Integer capacity, @RequestParam(required = false) String type, @RequestParam(required = false) String status) {
+        return new ResponseEntity<>(planeService.filterPlanes(capacity, type, status), OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
@@ -60,5 +60,4 @@ public class PlaneRestController {
         planeService.technicalService();
         return new ResponseEntity<>(OK);
     }
-
 }

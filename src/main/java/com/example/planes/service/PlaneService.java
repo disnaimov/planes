@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface PlaneService {
     UUID create(PlaneCreateDto createDto);
     List<PlaneResponseDto> getAll(PageRequest pageRequest);
-    List<PlaneResponseDto> filterPlanes(PlaneFilterDto planeFilterDto);
+    List<PlaneResponseDto> filterPlanes(Integer capacity, String type, String status);
     String registerPlane(UUID id);
     void delete(UUID id);
     void technicalService();

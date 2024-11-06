@@ -16,21 +16,23 @@ public class PlaneSpecifications {
         });
     }
 
-    public static Specification<Plane> filterByType(PlaneType type) {
+    public static Specification<Plane> filterByType(String type) {
         return ((root, query, criteriaBuilder) -> {
             if (type == null) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.equal(root.get("type"), type);
+            PlaneType planeType = PlaneType.fromString(type);
+            return criteriaBuilder.equal(root.get("type"), planeType);
         });
     }
 
-    public static Specification<Plane> filterByStatus(PlaneStatus status) {
+    public static Specification<Plane> filterByStatus(String status) {
         return (root, query, criteriaBuilder) -> {
             if (status == null) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.equal(root.get("status"), status);
+            PlaneStatus planeStatus = PlaneStatus.fromString(status);
+            return criteriaBuilder.equal(root.get("status"), planeStatus);
         };
     }
 }
