@@ -1,12 +1,11 @@
-package com.example.planes.model;
+package com.example.planes.entity;
 
-import com.example.planes.converter.PlaneStatusConverter;
-import com.example.planes.converter.PlaneTypeConverter;
-import com.example.planes.enums.PlaneStatus;
-import com.example.planes.enums.PlaneType;
+import com.example.planes.entity.enums.PlaneStatus;
+import com.example.planes.entity.enums.PlaneType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,10 +32,10 @@ public class Plane {
     @Column(name = "capacity")
     private int capacity;
     @Column(name = "plane_type")
-    @Convert(converter = PlaneTypeConverter.class)
+    @Enumerated(EnumType.STRING)
     private PlaneType type;
     @Column(name = "plane_status")
-    @Convert(converter = PlaneStatusConverter.class)
+    @Enumerated(EnumType.STRING)
     private PlaneStatus status;
     @Column(name = "technical_date")
     private LocalDateTime technicalDate;

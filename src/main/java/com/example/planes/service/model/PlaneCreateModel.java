@@ -1,6 +1,5 @@
-package com.example.planes.dto;
+package com.example.planes.service.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,12 +11,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaneCreateDto {
+public class PlaneCreateModel {
     private int capacity;
-    @JsonProperty("type")
     private String type;
-    @JsonProperty("status")
     private String status;
-    @JsonProperty("technical_date")
     private LocalDateTime technicalDate;
 }
