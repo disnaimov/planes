@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="20253101-002" author="Dmitriy">
+        <!-- создание временной таблицы -->
+        <createTable tableName="temp_producers">
+            <column name="name" type="varchar(255)"/>
+            <column name="country" type="varchar(255)"/>
+            <column name="foundation_date" type="timestamp"/>
+            <column name="serial_number" type="varchar(50)">
+                <constraints unique="true"/>
+            </column>
+        </createTable>
+
+        <!-- загрузка в нее данных -->
+        <loadData tableName="temp_producers" file="producers.csv">
+            <column name="name" header="name"/>
+            <column name="country" header="country"/>
+            <column name="foundation_date" header="foundation_date"/>
+            <column name="serial_number" header="serial_number"/>
+        </loadData>
+
+        <!-- insert данных в основную таблицу игнорируя записи с дубликатами уникальных полей -->
+        <sql>
+            INSERT INTO producers (id, name, country, foundation_date, serial_number)
+            SELECT gen_random_uuid(), name, country, foundation_date, serial_number
+            FROM temp_producers ON CONFLICT DO NOTHING;
+        </sql>
+
+        <!-- удаление временной таблицы -->
+        <dropTable tableName="temp_producers"/>
+    </changeSet>
+
+    <changeSet id="20253101-003" author="20253101-002">
+        <!-- создание временной таблицы -->
+        <createTable tableName="temp_service_points">
+            <column name="name" type="varchar(255)"/>
+            <column name="address" type="varchar(255)"/>
+            <column name="phone" type="varchar(255)">
+                <constraints unique="true"/>
+            </column>
+        </createTable>
+
+        <!-- загрузка в нее данных -->
+        <loadData tableName="temp_service_points" file="service_points.csv">
+            <column name="name" header="name"/>
+            <column name="address" header="address"/>
+            <column name="phone" header="phone"/>
+        </loadData>
+
+        <!-- insert данных в основную таблицу игнорируя записи с дубликатами уникальных полей -->
+        <sql>
+            INSERT INTO service_points (id, name, address, phone)
+            SELECT gen_random_uuid(), name, address, phone
+            FROM temp_service_points ON CONFLICT DO NOTHING
+        </sql>
+
+        <!-- удаление временной таблицы -->
+        <dropTable tableName="temp_service_points"/>
+    </changeSet>
+</databaseChangeLog>

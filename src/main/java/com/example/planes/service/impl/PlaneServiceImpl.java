@@ -1,25 +1,37 @@
 package com.example.planes.service.impl;
 
+import com.example.planes.dao.ActionRepository;
 import com.example.planes.dao.PlaneRepository;
+import com.example.planes.dao.ProducerRepository;
+import com.example.planes.dao.ServicePointRepository;
+import com.example.planes.dto.ActionResponseDto;
 import com.example.planes.dto.PlaneCreateDto;
 import com.example.planes.dto.PlaneResponseDto;
 import com.example.planes.enums.PlaneStatus;
 import com.example.planes.enums.PlaneType;
+import com.example.planes.enums.SortDirection;
 import com.example.planes.exception.InvalidEntityDataException;
 import com.example.planes.filter.specification.PlaneSpecifications;
+import com.example.planes.model.Action;
 import com.example.planes.model.Plane;
+import com.example.planes.model.Producer;
+import com.example.planes.model.ServicePoint;
 import com.example.planes.service.PlaneService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -27,6 +39,83 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PlaneServiceImpl implements PlaneService {
     private final PlaneRepository planeRepository;
+    private final ProducerRepository producerRepository;
+    private final ActionRepository actionRepository;
+    private final ServicePointRepository servicePointRepository;
+    private final JdbcTemplate jdbcTemplate;
+
+    @Override
+    @PostConstruct
+    // заполнение planes тестовыми данными
+    public void init() {
+        if (planeRepository.findAll().isEmpty()) {
+            Random random = new Random();
+            int minCapacity = 100000;
+            int maxCapacity = 1500000;
+            List<Plane> planes = new ArrayList<>();
+            List<Producer> producers = producerRepository.findAll();
+            List<PlaneType> planeTypes = List.of(PlaneType.CARGO,
+                    PlaneType.CARGO,
+                    PlaneType.PASSENGER,
+                    PlaneType.PASSENGER,
+                    PlaneType.CARGO,
+                    PlaneType.PASSENGER,
+                    PlaneType.CARGO,
+                    PlaneType.CARGO,
+                    PlaneType.PASSENGER,
+                    PlaneType.CARGO);
+
+            List<PlaneStatus> planeStatuses = List.of(PlaneStatus.SERVICE,
+                    PlaneStatus.SERVICE,
+                    PlaneStatus.FLIGHT,
+                    PlaneStatus.FLIGHT,
+                    PlaneStatus.WAITING_SERVICE,
+                    PlaneStatus.SERVICE,
+                    PlaneStatus.WAITING_SERVICE,
+                    PlaneStatus.SERVICE,
+                    PlaneStatus.FLIGHT,
+                    PlaneStatus.FLIGHT);
+
+            List<LocalDateTime> technicalDates = List.of(LocalDateTime.of(2021, 3, 15, 10, 30),
+                    LocalDateTime.of(2022, 7, 22, 14, 45),
+                    LocalDateTime.of(2023, 1, 5, 8, 15),
+                    LocalDateTime.of(2024, 9, 30, 19, 0),
+                    LocalDateTime.of(2025, 11, 11, 23, 59, 59),
+                    LocalDateTime.of(2020, 12, 25, 15, 0),
+                    LocalDateTime.of(2023, 4, 1, 12, 30),
+                    LocalDateTime.of(2022, 10, 10, 9, 0),
+                    LocalDateTime.of(2025, 5, 5, 18, 45),
+                    LocalDateTime.of(2024, 6, 18, 7, 20));
+            for (int i = 0; i < 10; i++) {
+                Plane plane = new Plane();
+                plane.setType(planeTypes.get(i));
+                plane.setStatus(planeStatuses.get(i));
+                plane.setCapacity(random.nextInt(maxCapacity - minCapacity + 1) + minCapacity);
+                plane.setTechnicalDate(technicalDates.get(i));
+                plane.setProducer(producers.get(i));
+
+                planes.add(plane);
+            }
+
+            planeRepository.saveAll(planes);
+
+            // проверим что plane_service_points пуста
+            Integer num = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM plane_service_points", Integer.class);
+            if (num == null || num == 0) {
+                List<Plane> allPlanes = planeRepository.findAll();
+                List<ServicePoint> allServicePoints = servicePointRepository.findAll();
+
+                // заполним plane_service_points
+                for (int i = 0; i < 10; i++) {
+                    Plane plane = allPlanes.get(i);
+                    ServicePoint servicePoint = allServicePoints.get(i);
+
+                    jdbcTemplate.update("INSERT INTO plane_service_points (plane_id, service_point_id) VALUES (?, ?)",
+                            plane.getId(), servicePoint.getId());
+                }
+            }
+        }
+    }
 
     @Override
     public UUID create(PlaneCreateDto createDto) {
@@ -118,7 +207,7 @@ public class PlaneServiceImpl implements PlaneService {
         if (planeRepository.findById(id).isPresent()) {
             planeRepository.delete(planeRepository.findById(id).orElseThrow());
         } else
-            throw new InvalidEntityDataException("Ошибка: указанный id не существует", "INCORRECT_ID", HttpStatus.NOT_FOUND);
+            throw new InvalidEntityDataException("Passed id does not exist", "INCORRECT_ID", HttpStatus.NOT_FOUND);
         log.info("Plane by id removed {}", planeRepository.findById(id));
     }
 
@@ -136,5 +225,50 @@ public class PlaneServiceImpl implements PlaneService {
                     planeRepository.save(plane);
                     log.info("Plane with ID: {} status updated to WAITING_SERVICE.", plane.getId());
                 });
+    }
+
+    @Override
+    public List<ActionResponseDto> getPlaneActions(UUID id, PageRequest pageRequest, SortDirection sortDirection) {
+        List<ActionResponseDto> actionResponseDtos = new ArrayList<>();
+        log.info("Fetching actions for plane with ID: {}, sort direction: {}", id, sortDirection);
+        Page<Action> planeActions = actionRepository.getActionsByPlane(planeRepository.getPlaneById(id), pageRequest);
+        log.info("Fetched {} actions for plane ID: {}", planeActions.getTotalElements(), id);
+
+        for (Action currentAction : planeActions) {
+            ActionResponseDto actionResponseDto = getActionResponseDto(currentAction);
+
+            log.debug("Processed action: {}", currentAction);
+            actionResponseDtos.add(actionResponseDto);
+        }
+
+
+        // сортируем по переданному порядку
+        if (sortDirection.equals(SortDirection.ASC)) {
+            log.info("Sorting actions in ASC order");
+            actionResponseDtos = actionResponseDtos.stream()
+                    .sorted(Comparator.comparing(ActionResponseDto::getActionDate))
+                    .toList();
+        } else if (sortDirection.equals(SortDirection.DESC)) {
+            log.info("Sorting actions in DESC order");
+            actionResponseDtos = actionResponseDtos.stream()
+                    .sorted(Comparator.comparing(ActionResponseDto::getActionDate).reversed())
+                    .toList();
+        }
+
+        log.info("Returning {} sorted action responses", actionResponseDtos.size());
+        return actionResponseDtos;
+    }
+
+    // заполняет дтошку данными из переданного action
+    private static ActionResponseDto getActionResponseDto(Action currentAction) {
+        ActionResponseDto actionResponseDto = new ActionResponseDto();
+
+        actionResponseDto.setId(currentAction.getId());
+        actionResponseDto.setAction(currentAction.getAction());
+        actionResponseDto.setActionDate(currentAction.getActionDate());
+        actionResponseDto.setPlane_id(currentAction.getPlane().getId());
+        actionResponseDto.setService_point_id(currentAction.getServicePoint().getId());
+        actionResponseDto.setEmployee_id(currentAction.getEmployee().getId());
+        return actionResponseDto;
     }
 }
