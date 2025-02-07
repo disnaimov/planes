@@ -3,7 +3,6 @@ package com.example.planes.service.impl;
 import com.example.planes.dao.ActionRepository;
 import com.example.planes.dao.PlaneRepository;
 import com.example.planes.dao.ProducerRepository;
-import com.example.planes.dao.ServicePointRepository;
 import com.example.planes.dto.ActionResponseDto;
 import com.example.planes.dto.PlaneCreateDto;
 import com.example.planes.dto.PlaneResponseDto;
@@ -15,7 +14,6 @@ import com.example.planes.filter.specification.PlaneSpecifications;
 import com.example.planes.model.Action;
 import com.example.planes.model.Plane;
 import com.example.planes.model.Producer;
-import com.example.planes.model.ServicePoint;
 import com.example.planes.service.PlaneService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +36,16 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PlaneServiceImpl implements PlaneService {
+    // заполняет plane_service_points случайными комбинациями
+    private static final String SHUFFLE_INSERT =
+            "INSERT INTO plane_service_points (plane_id, service_point_id) " +
+                    "SELECT p.id, sp.id " +
+                    "FROM planes p " +
+                    "CROSS JOIN service_points sp " +
+                    "WHERE RANDOM() < 0.5 LIMIT 10";
     private final PlaneRepository planeRepository;
     private final ProducerRepository producerRepository;
     private final ActionRepository actionRepository;
-    private final ServicePointRepository servicePointRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -102,17 +106,7 @@ public class PlaneServiceImpl implements PlaneService {
             // проверим что plane_service_points пуста
             Integer num = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM plane_service_points", Integer.class);
             if (num == null || num == 0) {
-                List<Plane> allPlanes = planeRepository.findAll();
-                List<ServicePoint> allServicePoints = servicePointRepository.findAll();
-
-                // заполним plane_service_points
-                for (int i = 0; i < 10; i++) {
-                    Plane plane = allPlanes.get(i);
-                    ServicePoint servicePoint = allServicePoints.get(i);
-
-                    jdbcTemplate.update("INSERT INTO plane_service_points (plane_id, service_point_id) VALUES (?, ?)",
-                            plane.getId(), servicePoint.getId());
-                }
+                jdbcTemplate.update(SHUFFLE_INSERT);
             }
         }
     }
