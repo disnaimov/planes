@@ -69,34 +69,13 @@ public class PlaneRestController {
 
     //List<ActionResponseDto>
     @RequestMapping(value = "/history/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Object> getPlaneActions(@PathVariable("id") @NotNull UUID id,
-                                                  @RequestParam(required = false, defaultValue = "0") int page,
-                                                  @RequestParam(required = false, defaultValue = "20") int size,
-                                                  @RequestParam(required = false, defaultValue = "DESC") String sortDirection) {
+    public ResponseEntity<List<ActionResponseDto>> getPlaneActions(@PathVariable("id") @NotNull UUID id,
+                                                  @RequestParam(required = false, defaultValue = "0") @Min(0) int page,
+                                                  @RequestParam(required = false, defaultValue = "20") @Min(1) int size,
+                                                  @RequestParam(required = false, defaultValue = "DESC") @Valid SortDirection sortDirection) {
 
 
-        Map<String, String> errors = new HashMap<>();
-
-        if (page < 0) {
-            errors.put("page", "Параметр 'page' должен быть >= 0.");
-        }
-        if (size < 1) {
-            errors.put("size", "Параметр 'size' должен быть >= 1.");
-        }
-
-        SortDirection direction = SortDirection.ASC;
-        try {
-            direction = SortDirection.valueOf(sortDirection.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            errors.put("sort direction", "Неверное значение для параметра 'sortDirection'. Допустимые значения: ASC, DESC.");
-        }
-
-        if (!errors.isEmpty()) {
-            return ResponseEntity.badRequest().body(errors);
-        }
-
-        List<ActionResponseDto> actions = planeService.getPlaneActions(id, PageRequest.of(page, size), direction);
-        return ResponseEntity.ok(actions);
+        return new ResponseEntity<>(planeService.getPlaneActions(id, PageRequest.of(page, size), sortDirection), OK);
     }
 }
 

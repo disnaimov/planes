@@ -1,6 +1,8 @@
 package com.example.planes.dto;
 
 import com.example.planes.enums.PlaneAction;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ActionResponseDto {
     private UUID id;
+    @Enumerated(EnumType.STRING)
     private PlaneAction action;
     private LocalDateTime actionDate;
     private UUID plane_id;
