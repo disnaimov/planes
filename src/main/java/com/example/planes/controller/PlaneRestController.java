@@ -1,7 +1,6 @@
 package com.example.planes.controller;
 
 import com.example.planes.dto.PlaneCreateDto;
-import com.example.planes.dto.PlaneFilterDto;
 import com.example.planes.dto.PlaneResponseDto;
 import com.example.planes.service.PlaneService;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +57,12 @@ public class PlaneRestController {
     @RequestMapping(value = "/service", method = RequestMethod.PATCH)
     public ResponseEntity<HttpStatus> technicalService() {
         planeService.technicalService();
+        return new ResponseEntity<>(OK);
+    }
+
+    @RequestMapping(value = "/schedule", method = RequestMethod.PATCH)
+    public ResponseEntity<HttpStatus> transactionUpdate() {
+        planeService.transactionUpdate();
         return new ResponseEntity<>(OK);
     }
 }

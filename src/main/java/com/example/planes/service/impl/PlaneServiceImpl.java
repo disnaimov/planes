@@ -8,18 +8,22 @@ import com.example.planes.enums.PlaneType;
 import com.example.planes.exception.InvalidEntityDataException;
 import com.example.planes.filter.specification.PlaneSpecifications;
 import com.example.planes.model.Plane;
+import com.example.planes.scheduling.TransactionalCapacityUpdateJob;
 import com.example.planes.service.PlaneService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -27,6 +31,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PlaneServiceImpl implements PlaneService {
     private final PlaneRepository planeRepository;
+    private final TransactionTemplate transactionTemplate;
+    private final TransactionalCapacityUpdateJob job;
 
     @Override
     public UUID create(PlaneCreateDto createDto) {
@@ -137,4 +143,11 @@ public class PlaneServiceImpl implements PlaneService {
                     log.info("Plane with ID: {} status updated to WAITING_SERVICE.", plane.getId());
                 });
     }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void transactionUpdate() {
+        job.schedule();
+    }
+
 }

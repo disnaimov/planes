@@ -13,3 +13,23 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: integration
+            instanceId: AUTO
+            skipUpdateCheck: true
+            batchTriggerAcquisitionMaxCount: 20
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+            tablePrefix: qtz_
+            isClustered: true
+            acquireTriggersWithinLock: true
+            useProperties: true

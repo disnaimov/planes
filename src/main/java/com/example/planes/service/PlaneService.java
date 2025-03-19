@@ -1,7 +1,6 @@
 package com.example.planes.service;
 
 import com.example.planes.dto.PlaneCreateDto;
-import com.example.planes.dto.PlaneFilterDto;
 import com.example.planes.dto.PlaneResponseDto;
 import org.springframework.data.domain.PageRequest;
 
@@ -18,4 +17,5 @@ public interface PlaneService {
     String registerPlane(UUID id);
     void delete(UUID id);
     void technicalService();
+    void transactionUpdate();
 }
