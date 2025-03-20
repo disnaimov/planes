@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -145,9 +146,16 @@ public class PlaneServiceImpl implements PlaneService {
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void transactionUpdate() {
-        job.schedule();
+        transactionTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_SERIALIZABLE);
+        transactionTemplate.execute(status -> {
+            try {
+                job.schedule();
+                return null;
+            } catch (Exception e) {
+                status.setRollbackOnly();
+                throw e;
+            }
+        });
     }
-
 }
