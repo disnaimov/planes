@@ -1,11 +1,17 @@
 package com.example.planes.controller;
 
-import com.example.planes.dto.PlaneCreateDto;
-import com.example.planes.dto.PlaneResponseDto;
+import com.example.planes.controller.dto.PlaneCreateDto;
+import com.example.planes.controller.dto.PlaneDeleteResponseDto;
+import com.example.planes.controller.dto.PlaneRegisterResponseDto;
+import com.example.planes.controller.dto.PlaneResponseDto;
+import com.example.planes.controller.dto.PlaneTOResponseDto;
+import com.example.planes.controller.mapper.PlaneDtoMapper;
 import com.example.planes.service.PlaneService;
+import com.example.planes.service.mapper.PlaneModelMapper;
+import com.example.planes.service.model.PlaneCreateModel;
+import com.example.planes.service.model.PlaneResponseModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,11 +20,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -26,38 +33,55 @@ import static org.springframework.http.HttpStatus.OK;
 @RequiredArgsConstructor
 public class PlaneRestController {
     private final PlaneService planeService;
+    private final PlaneModelMapper modelMapper;
+    private final PlaneDtoMapper dtoMapper;
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UUID> create(@RequestBody PlaneCreateDto createDto) {
-        return new ResponseEntity<>(planeService.create(createDto), CREATED);
+        PlaneCreateModel model = modelMapper.toModel(createDto);
+        UUID response = planeService.create(model);
+        return new ResponseEntity<>(response, CREATED);
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<PlaneResponseDto>> getAll(@RequestParam(required = false, defaultValue = "0") int page,
                                                          @RequestParam(required = false, defaultValue = "20") int size) {
-        return new ResponseEntity<>(planeService.getAll(PageRequest.of(page, size)), OK);
+        List<PlaneResponseModel> planeResponseModels = planeService.getAll(PageRequest.of(page, size));
+        List<PlaneResponseDto> dto = dtoMapper.toDto(planeResponseModels);
+        //return new ResponseEntity<>(dtoMapper.toDto(planeService.getAll(PageRequest.of(page, size))), OK);
+        return new ResponseEntity<>(dto, OK);
     }
 
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
     public ResponseEntity<List<PlaneResponseDto>> getWithFilters(@RequestParam(required = false) Integer capacity, @RequestParam(required = false) String type, @RequestParam(required = false) String status) {
-        return new ResponseEntity<>(planeService.filterPlanes(capacity, type, status), OK);
+
+        return new ResponseEntity<>(dtoMapper.toDto(planeService.filterPlanes(capacity, type, status)), OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public ResponseEntity<String> registerPlane(@PathVariable("id") UUID id) {
-        return new ResponseEntity<>(planeService.registerPlane(id), OK);
+    public ResponseEntity<PlaneRegisterResponseDto> registerPlane(@PathVariable("id") UUID id) {
+        return new ResponseEntity<>(dtoMapper.toDto(planeService.registerPlane(id)), OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<HttpStatus> deleteById(@PathVariable("id") UUID id) {
-        planeService.delete(id);
-        return new ResponseEntity<>(NO_CONTENT);
+    public ResponseEntity<PlaneDeleteResponseDto> deleteById(@PathVariable("id") UUID id) {
+        return new ResponseEntity<>(dtoMapper.toDto(planeService.delete(id)), OK);
     }
 
     @RequestMapping(value = "/service", method = RequestMethod.PATCH)
-    public ResponseEntity<HttpStatus> technicalService() {
-        planeService.technicalService();
-        return new ResponseEntity<>(OK);
+    public ResponseEntity<PlaneTOResponseDto> technicalService() {
+        return new ResponseEntity<>(dtoMapper.toDto(planeService.technicalService()) ,OK);
+    }
+
+    //List<ActionResponseDto>
+    @RequestMapping(value = "/history/{id}", method = RequestMethod.GET)
+    public ResponseEntity<List<ActionResponseDto>> getPlaneActions(@PathVariable("id") @NotNull UUID id,
+                                                  @RequestParam(required = false, defaultValue = "0") @Min(0) int page,
+                                                  @RequestParam(required = false, defaultValue = "20") @Min(1) int size,
+                                                  @RequestParam(required = false, defaultValue = "DESC") @Valid SortDirection sortDirection) {
+
+
+        return new ResponseEntity<>(planeService.getPlaneActions(id, PageRequest.of(page, size), sortDirection), OK);
     }
 
     @RequestMapping(value = "/schedule", method = RequestMethod.PATCH)
@@ -66,3 +90,4 @@ public class PlaneRestController {
         return new ResponseEntity<>(OK);
     }
 }
+

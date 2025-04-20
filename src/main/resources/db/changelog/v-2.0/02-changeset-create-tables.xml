@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="20240312-001" author="Dmitriy">
+
+        <!-- проверка на существование таблицы -->
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="service_points"/>
+            </not>
+        </preConditions>
+
+        <!-- создание таблицы пунктов обслуживания -->
+        <createTable tableName="service_points">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="varchar(20)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- добавление producer_id в planes -->
+    <changeSet id="20240312-002" author="Dmitriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="planes"/>
+            <not>
+                <columnExists tableName="planes" columnName="producer_id"/>
+            </not>
+        </preConditions>
+
+        <addColumn tableName="planes">
+            <column name="producer_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- создание таблицы producers -->
+    <changeSet id="20240312-003" author="Dmitriy">
+
+        <!-- проверка на существование таблицы -->
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="producers"/>
+            </not>
+        </preConditions>
+
+        <!-- создание таблицы производителей -->
+        <createTable tableName="producers">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="foundation_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="serial_number" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- добавление fk для planes на producer -->
+    <changeSet id="20240312-004" author="Dmitriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="planes"/>
+            <tableExists tableName="producers"/>
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk_planes_producer_id"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint baseTableName="planes"
+                                 baseColumnNames="producer_id"
+                                 constraintName="fk_planes_producer_id"
+                                 referencedTableName="producers"
+                                 referencedColumnNames="id"
+        />
+    </changeSet>
+
+
+    <!-- создание таблицы employee -->
+    <changeSet id="20240312-005" author="Dmitriy">
+
+        <!-- проверка на существование таблицы -->
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="employees"/>
+            </not>
+        </preConditions>
+
+        <!-- создание таблицы пунктов обслуживания -->
+        <createTable tableName="employees">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="varchar(20)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="role_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- создание таблицы employee_roles -->
+    <changeSet id="20240312-006" author="Dmitriy">
+
+        <!-- проверка на существование таблицы -->
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="employee_roles"/>
+            </not>
+        </preConditions>
+
+        <!-- создание таблицы ролей сотрудников -->
+        <createTable tableName="employee_roles">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- добавление fk для employee на role -->
+    <changeSet id="20240312-007" author="Dmitriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="employees"/>
+            <tableExists tableName="employee_roles"/>
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk_employees_role_id"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint baseTableName="employees"
+                                 baseColumnNames="role_id"
+                                 constraintName="fk_employees_role_id"
+                                 referencedTableName="employee_roles"
+                                 referencedColumnNames="id"
+        />
+    </changeSet>
+
+    <!-- создание таблицы дейтсвий самолетов -->
+    <changeSet id="20240312-008" author="Dmitriy">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="actions"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="actions">
+            <column type="uuid" name="id">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column type="varchar(11)" name="action">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column type="uuid" name="plane_id">
+                <constraints nullable="false"/>
+            </column>
+            <column type="uuid" name="service_point_id">
+                <constraints nullable="false"/>
+            </column>
+            <column type="uuid" name="employee_id">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- добавление check ограничения на actions для поля action -->
+    <changeSet id="20240312-009" author="Dmitriy">
+
+        <!-- проверяем нет ли уже check ограничения в таблице actions -->
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="actions"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*)
+                FROM information_schema.table_constraints
+                WHERE table_name = 'actions'
+                  AND constraint_type = 'CHECK'
+                  AND constraint_name = 'chk_action_values';
+            </sqlCheck>
+        </preConditions>
+
+        <sql>
+            ALTER TABLE actions
+                ADD CONSTRAINT chk_action_values
+                    CHECK (action IN ('ARRIVAL', 'DEPARTURE', 'MAINTENANCE'));
+        </sql>
+    </changeSet>
+
+    <!-- добавления fk для actions на plane, service_point, employee -->
+    <changeSet id="20240312-010" author="Dmitriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="actions"/>
+            <columnExists tableName="actions" columnName="plane_id"/>
+            <columnExists tableName="actions" columnName="service_point_id"/>
+            <columnExists tableName="actions" columnName="employee_id"/>
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk_actions_plane"/>
+                <foreignKeyConstraintExists foreignKeyName="fk_actions_service_point"/>
+                <foreignKeyConstraintExists foreignKeyName="fk_actions_employee"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint baseTableName="actions"
+                                 baseColumnNames="plane_id"
+                                 constraintName="fk_actions_plane"
+                                 referencedTableName="planes"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="actions"
+                                 baseColumnNames="service_point_id"
+                                 constraintName="fk_actions_service_point"
+                                 referencedTableName="service_points"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="actions"
+                                 baseColumnNames="employee_id"
+                                 constraintName="fk_actions_employee"
+                                 referencedTableName="employees"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- создание таблицы service_points -->
+    <changeSet id="20240312-011" author="Dmitriy">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="plane_service_points"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="plane_service_points">
+            <column name="plane_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="service_point_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- добавление fk для manyToMany таблицы plane_service_points -->
+    <changeSet id="20240312-012" author="Dmitriy">
+
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="plane_service_points"/>
+            <tableExists tableName="planes"/>
+            <tableExists tableName="service_points"/>
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk_plane_service_points_planes"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint baseColumnNames="plane_id"
+                                 baseTableName="plane_service_points"
+                                 constraintName="fk_plane_service_points_planes"
+                                 referencedColumnNames="id"
+                                 referencedTableName="planes"/>
+        <addForeignKeyConstraint baseColumnNames="service_point_id"
+                                 baseTableName="plane_service_points"
+                                 constraintName="fk_plane_service_points_service_points"
+                                 referencedColumnNames="id"
+                                 referencedTableName="service_points"/>
+    </changeSet>
+
+    <!-- добавление составного pk для plane_service_points из fk plane_id и service_point_id -->
+    <changeSet id="20240312-013" author="Dmitriy">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="plane_service_points"/>
+            <not>
+                <primaryKeyExists primaryKeyName="pk_plane_service_points"/>
+            </not>
+        </preConditions>
+        <addPrimaryKey columnNames="plane_id, service_point_id"
+                       constraintName="pk_plane_service_points"
+                       tableName="plane_service_points"/>
+    </changeSet>
+
+</databaseChangeLog>

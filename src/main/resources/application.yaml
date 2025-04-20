@@ -4,9 +4,9 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.xml
 
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/planes
-    username: postgres
-    password: 1
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -33,3 +33,10 @@ spring:
             isClustered: true
             acquireTriggersWithinLock: true
             useProperties: true
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    user:
+      name: ${USER_NAME}
+      password: ${USER_PASSWORD}

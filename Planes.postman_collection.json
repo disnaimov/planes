@@ -55,7 +55,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{  \r\n    \"capacity\": 160,  \r\n    \"type\": \"\",  \r\n    \"status\": \"\",  \r\n    \"technical_date\": \"\"  \r\n}",
+					"raw": "{  \r\n    \"capacity\": 160,  \r\n    \"type\": \"cargo\",  \r\n    \"status\": \"flight\",  \r\n    \"technical_date\": \"2024-11-05T16:32:17\"  \r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -647,56 +647,6 @@
 					"port": "8080",
 					"path": [
 						"planes"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "getPlaneHistory",
-			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "password",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "user",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/planes/history/d600e6d2-ae29-4c12-a3d7-60b5e9c5bf97?sortDirection=desca&size=-1&page=-2",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"planes",
-						"history",
-						"d600e6d2-ae29-4c12-a3d7-60b5e9c5bf97"
-					],
-					"query": [
-						{
-							"key": "sortDirection",
-							"value": "desca"
-						},
-						{
-							"key": "size",
-							"value": "-1"
-						},
-						{
-							"key": "page",
-							"value": "-2"
-						}
 					]
 				}
 			},

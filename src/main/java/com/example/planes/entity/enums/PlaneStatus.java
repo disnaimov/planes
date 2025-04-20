@@ -1,15 +1,16 @@
-package com.example.planes.enums;
+package com.example.planes.entity.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum PlaneType {
-    CARGO("cargo"),
-    PASSENGER("passenger");
+public enum PlaneStatus {
+    FLIGHT("flight"),
+    SERVICE("service"),
+    WAITING_SERVICE("waiting_service");
 
     private final String value;
 
-    PlaneType(String value) {
+    PlaneStatus(String value) {
         this.value = value;
     }
 
@@ -19,8 +20,8 @@ public enum PlaneType {
     }
 
     @JsonCreator
-    public static PlaneType fromString(String value) {
-        for (PlaneType item : PlaneType.values()) {
+    public static PlaneStatus fromString(String value) {
+        for (PlaneStatus item : PlaneStatus.values()) {
             if (item.getValue().equalsIgnoreCase(value)) {
                 return item;
             }
