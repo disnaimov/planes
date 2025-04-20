@@ -1,28 +1,23 @@
 package com.example.planes.service;
 
-import com.example.planes.dto.ActionResponseDto;
-import com.example.planes.dto.PlaneCreateDto;
-import com.example.planes.dto.PlaneResponseDto;
-import com.example.planes.enums.SortDirection;
+import com.example.planes.service.model.PlaneCreateModel;
+import com.example.planes.service.model.PlaneDeleteResponseModel;
+import com.example.planes.service.model.PlaneRegisterResponseModel;
+import com.example.planes.service.model.PlaneResponseModel;
+import com.example.planes.service.model.PlaneTOResponseModel;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.UUID;
-
+/*
+ 4. Пользователь должен иметь возможность запустить процесс техобслуживания
+ свободных самолетов.
+ */
 public interface PlaneService {
-    void init();
-
-    UUID create(PlaneCreateDto createDto);
-
-    List<PlaneResponseDto> getAll(PageRequest pageRequest);
-
-    List<PlaneResponseDto> filterPlanes(Integer capacity, String type, String status);
-
-    String registerPlane(UUID id);
-
-    void delete(UUID id);
-
-    void technicalService();
-
-    List<ActionResponseDto> getPlaneActions(UUID id, PageRequest pageRequest, SortDirection sortDirection);
+    UUID create(PlaneCreateModel createDto);
+    List<PlaneResponseModel> getAll(PageRequest pageRequest);
+    List<PlaneResponseModel> filterPlanes(Integer capacity, String type, String status);
+    PlaneRegisterResponseModel registerPlane(UUID id);
+    PlaneDeleteResponseModel delete(UUID id);
+    PlaneTOResponseModel technicalService();
 }

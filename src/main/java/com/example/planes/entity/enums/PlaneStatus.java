@@ -1,4 +1,4 @@
-package com.example.planes.enums;
+package com.example.planes.entity.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

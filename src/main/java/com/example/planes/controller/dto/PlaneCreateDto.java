@@ -1,4 +1,4 @@
-package com.example.planes.dto;
+package com.example.planes.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;

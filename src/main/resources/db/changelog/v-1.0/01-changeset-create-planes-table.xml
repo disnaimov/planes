@@ -6,7 +6,8 @@
                 <tableExists tableName="planes" />
             </not>
         </preConditions>
-        
+
+    <changeSet id="20241115-002" author="Dmitriy">
         <sqlFile dbms="postgresql"
                  encoding="UTF-8"
                  endDelimiter="\nGO"

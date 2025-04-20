@@ -1,8 +1,9 @@
-package com.example.planes.dto;
+package com.example.planes.service.model;
 
-import com.example.planes.enums.PlaneStatus;
-import com.example.planes.enums.PlaneType;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.example.planes.entity.enums.PlaneStatus;
+import com.example.planes.entity.enums.PlaneType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,13 +14,13 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class PlaneResponseDto {
+@AllArgsConstructor
+public class PlaneResponseModel {
     private UUID id;
     private int capacity;
+    @Enumerated(EnumType.STRING)
     private PlaneType type;
     private PlaneStatus status;
-    @JsonProperty("technical_date")
     private LocalDateTime technicalDate;
 }

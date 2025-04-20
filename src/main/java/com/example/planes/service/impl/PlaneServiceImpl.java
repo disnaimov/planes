@@ -9,12 +9,20 @@ import com.example.planes.dto.PlaneResponseDto;
 import com.example.planes.enums.PlaneStatus;
 import com.example.planes.enums.PlaneType;
 import com.example.planes.enums.SortDirection;
+import com.example.planes.entity.Plane;
+import com.example.planes.entity.enums.PlaneStatus;
+import com.example.planes.entity.enums.PlaneType;
 import com.example.planes.exception.InvalidEntityDataException;
 import com.example.planes.filter.specification.PlaneSpecifications;
 import com.example.planes.model.Action;
 import com.example.planes.model.Plane;
 import com.example.planes.model.Producer;
 import com.example.planes.service.PlaneService;
+import com.example.planes.service.model.PlaneCreateModel;
+import com.example.planes.service.model.PlaneDeleteResponseModel;
+import com.example.planes.service.model.PlaneRegisterResponseModel;
+import com.example.planes.service.model.PlaneResponseModel;
+import com.example.planes.service.model.PlaneTOResponseModel;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,14 +120,35 @@ public class PlaneServiceImpl implements PlaneService {
     }
 
     @Override
-    public UUID create(PlaneCreateDto createDto) {
+    public UUID create(PlaneCreateModel createModel) {
+
+        // проверка грузоподъемности
+        if (createModel.getCapacity() < 0) {
+            throw new InvalidEntityDataException("Capacity must be greater than or equal to 0.", "INCORRECT_CAPACITY", HttpStatus.BAD_REQUEST);
+        }
+
+        // проверка типа самолета
+        PlaneType planeType;
+        try {
+            planeType = PlaneType.fromString(createModel.getType());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidEntityDataException("Invalid plane type: " + createModel.getType(), "INCORRECT_TYPE", HttpStatus.BAD_REQUEST);
+        }
+
+        // проверка статуса самолета
+        PlaneStatus planeStatus;
+        try {
+            planeStatus = PlaneStatus.fromString(createModel.getStatus());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidEntityDataException("Invalid plane status: " + createModel.getStatus(), "INCORRECT_STATUS", HttpStatus.BAD_REQUEST);
+        }
         // создаем новый самолет и заполняем данным из дто
-        log.info("Creating a new plane with details: {}", createDto);
+        log.info("Creating a new plane with details: {}", createModel);
         Plane plane = new Plane();
-        plane.setCapacity(createDto.getCapacity());
-        plane.setType(PlaneType.fromString(createDto.getType()));
-        plane.setStatus(PlaneStatus.fromString(createDto.getStatus()));
-        plane.setTechnicalDate(createDto.getTechnicalDate());
+        plane.setCapacity(createModel.getCapacity());
+        plane.setType(PlaneType.fromString(createModel.getType()));
+        plane.setStatus(PlaneStatus.fromString(createModel.getStatus()));
+        plane.setTechnicalDate(createModel.getTechnicalDate());
 
         planeRepository.save(plane); // сохраняем
         log.info("New plane created with ID: {}", plane.getId());
@@ -128,52 +157,30 @@ public class PlaneServiceImpl implements PlaneService {
     }
 
     @Override
-    public List<PlaneResponseDto> getAll(PageRequest pageRequest) {
+    public List<PlaneResponseModel> getAll(PageRequest pageRequest) {
         // собираем список всех самолетов с учетом паггинации
         log.info("Fetching all planes with pagination: {}", pageRequest);
         List<Plane> planes = planeRepository.findAll(pageRequest).getContent();
         log.info("Retrieved {} planes.", planes.size());
-        return getPlaneResponseDtos(planes);
-    }
-
-    // маппит список самолетов в список респонс дтошек
-    private List<PlaneResponseDto> getPlaneResponseDtos(List<Plane> planes) {
-        log.info("Mapping {} planes to response DTOs.", planes.size());
-        List<PlaneResponseDto> planeResponseDtos = new ArrayList<>();
-
-        planes.stream()
-                .forEach(plane -> {
-                    // создаем и заполняем дтошку
-                    PlaneResponseDto responseDto = new PlaneResponseDto();
-                    responseDto.setId(plane.getId());
-                    responseDto.setCapacity(plane.getCapacity());
-                    responseDto.setType(plane.getType());
-                    responseDto.setStatus(plane.getStatus());
-                    responseDto.setTechnicalDate(plane.getTechnicalDate());
-
-                    // добавляем в список
-                    planeResponseDtos.add(responseDto);
-                });
-
-        return planeResponseDtos;
+        return getPlaneResponseModels(planes);
     }
 
     @Override
-    public List<PlaneResponseDto> filterPlanes(Integer capacity, String type, String status) {
+    public List<PlaneResponseModel> filterPlanes(Integer capacity, String type, String status) {
         // собираем спку по переданным фильтрам
         log.info("Filtering planes with capacity: {}, type: {}, status: {}", capacity, type, status);
-        Specification<Plane> spec = Specification.where(PlaneSpecifications.filterByCapacity(capacity))
-                .and(PlaneSpecifications.filterByType(type))
-                .and(PlaneSpecifications.filterByStatus(status));
+        Specification<Plane> spec = Specification.where(filterByCapacity(capacity))
+                .and(filterByType(type))
+                .and(filterByStatus(status));
 
         // получаем и возвращаем список с учетом спеки
         List<Plane> planes = planeRepository.findAll(spec);
         log.info("Filtered {} planes based on criteria.", planes.size());
-        return getPlaneResponseDtos(planes);
+        return getPlaneResponseModels(planes);
     }
 
     @Override
-    public String registerPlane(UUID id) {
+    public PlaneRegisterResponseModel registerPlane(UUID id) {
         log.info("Attempting to register plane with ID: {}", id);
         Plane plane = planeRepository.getPlaneById(id);
 
@@ -192,24 +199,27 @@ public class PlaneServiceImpl implements PlaneService {
             log.error("Plane with ID: {} does not exist.", id);
             throw new InvalidEntityDataException("Plane does not exist", "INCORRECT_ID", HttpStatus.NOT_FOUND); // исключение, если самолет не найден
         }
-        return "Plane with id " + id + " was successfulnesses registered";
+        return new PlaneRegisterResponseModel("Plane successfully registered", id);
     }
 
     @Override
-    public void delete(UUID id) {
+    public PlaneDeleteResponseModel delete(UUID id) {
         log.info("Removal plane by id {}", id);
         if (planeRepository.findById(id).isPresent()) {
             planeRepository.delete(planeRepository.findById(id).orElseThrow());
         } else
             throw new InvalidEntityDataException("Passed id does not exist", "INCORRECT_ID", HttpStatus.NOT_FOUND);
         log.info("Plane by id removed {}", planeRepository.findById(id));
+
+        return new PlaneDeleteResponseModel("Plane successfully deleted", id);
     }
 
     @Override
-    public void technicalService() {
+    public PlaneTOResponseModel technicalService() {
         // собираем всех кто в сервисе
         log.info("Starting technical service for planes in SERVICE status.");
         List<Plane> planes = planeRepository.findAllByStatus(PlaneStatus.SERVICE);
+        List<UUID> ids = new ArrayList<>();
         planes.stream()
                 .forEach(plane -> {
                     // проводим обслуживание, меняем статус и время, сохраняем
@@ -217,8 +227,65 @@ public class PlaneServiceImpl implements PlaneService {
                     plane.setStatus(PlaneStatus.WAITING_SERVICE);
                     plane.setTechnicalDate(LocalDateTime.now());
                     planeRepository.save(plane);
+                    ids.add(plane.getId());
                     log.info("Plane with ID: {} status updated to WAITING_SERVICE.", plane.getId());
                 });
+
+        if (ids.isEmpty()) {
+            return new PlaneTOResponseModel("No planes in SERVICE status, no maintenance was done", null);
+        }
+        return new PlaneTOResponseModel("Maintenance was successful for planes with id", ids);
+    }
+
+    // маппит список самолетов в список респонс дтошек
+    private List<PlaneResponseModel> getPlaneResponseModels(List<Plane> planes) {
+        log.info("Mapping {} planes to response DTOs.", planes.size());
+        List<PlaneResponseModel> planeResponseModels = new ArrayList<>();
+
+        planes.stream()
+                .forEach(plane -> {
+                    // создаем и заполняем дтошку
+                    PlaneResponseModel responseModel = new PlaneResponseModel();
+                    responseModel.setId(plane.getId());
+                    responseModel.setCapacity(plane.getCapacity());
+                    responseModel.setType(plane.getType());
+                    responseModel.setStatus(plane.getStatus());
+                    responseModel.setTechnicalDate(plane.getTechnicalDate());
+
+                    // добавляем в список
+                    planeResponseModels.add(responseModel);
+                });
+
+        return planeResponseModels;
+    }
+
+    private static Specification<Plane> filterByCapacity(Integer capacity) {
+        return ((root, query, criteriaBuilder) -> {
+            if (capacity == null) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(root.get("capacity"), capacity);
+        });
+    }
+
+    private static Specification<Plane> filterByType(String type) {
+        return ((root, query, criteriaBuilder) -> {
+            if (type == null) {
+                return criteriaBuilder.conjunction();
+            }
+            PlaneType planeType = PlaneType.fromString(type);
+            return criteriaBuilder.equal(root.get("type"), planeType);
+        });
+    }
+
+    private static Specification<Plane> filterByStatus(String status) {
+        return (root, query, criteriaBuilder) -> {
+            if (status == null) {
+                return criteriaBuilder.conjunction();
+            }
+            PlaneStatus planeStatus = PlaneStatus.fromString(status);
+            return criteriaBuilder.equal(root.get("status"), planeStatus);
+        };
     }
 
     @Override

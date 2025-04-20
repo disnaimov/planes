@@ -1,15 +1,15 @@
-package com.example.planes.enums;
+package com.example.planes.entity.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum SortDirection {
-    ASC("asc"),
-    DESC("desc");
+public enum PlaneType {
+    CARGO("cargo"),
+    PASSENGER("passenger");
 
     private final String value;
 
-    SortDirection(String value) {
+    PlaneType(String value) {
         this.value = value;
     }
 
@@ -19,12 +19,12 @@ public enum SortDirection {
     }
 
     @JsonCreator
-    public static SortDirection fromString(String value) {
-        for (SortDirection item : SortDirection.values()) {
+    public static PlaneType fromString(String value) {
+        for (PlaneType item : PlaneType.values()) {
             if (item.getValue().equalsIgnoreCase(value)) {
                 return item;
             }
         }
-        throw new IllegalArgumentException(value + " is not a valid " + SortDirection.class.getSimpleName());
+        throw new IllegalArgumentException(value + " is not a valid " + PlaneType.class.getSimpleName());
     }
 }
