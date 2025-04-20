@@ -15,10 +15,10 @@
 
 ## Стек
 
-язык программирования: java
-фреймворк: spring boot
-работа с бд: spring boot jpa
-бд: postgresql
+* язык программирования: java
+* фреймворк: spring boot
+* работа с бд: spring boot jpa
+* бд: postgresql
 
 ## Функции
 
