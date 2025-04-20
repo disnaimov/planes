@@ -6,12 +6,17 @@ import com.example.planes.controller.dto.PlaneRegisterResponseDto;
 import com.example.planes.controller.dto.PlaneResponseDto;
 import com.example.planes.controller.dto.PlaneTOResponseDto;
 import com.example.planes.controller.mapper.PlaneDtoMapper;
+import com.example.planes.entity.enums.SortDirection;
 import com.example.planes.service.PlaneService;
 import com.example.planes.service.mapper.PlaneModelMapper;
 import com.example.planes.service.model.PlaneCreateModel;
 import com.example.planes.service.model.PlaneResponseModel;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,9 +25,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -75,10 +78,10 @@ public class PlaneRestController {
 
     //List<ActionResponseDto>
     @RequestMapping(value = "/history/{id}", method = RequestMethod.GET)
-    public ResponseEntity<List<ActionResponseDto>> getPlaneActions(@PathVariable("id") @NotNull UUID id,
-                                                  @RequestParam(required = false, defaultValue = "0") @Min(0) int page,
-                                                  @RequestParam(required = false, defaultValue = "20") @Min(1) int size,
-                                                  @RequestParam(required = false, defaultValue = "DESC") @Valid SortDirection sortDirection) {
+    public ResponseEntity<List<com.example.planes.dto.ActionResponseDto>> getPlaneActions(@PathVariable("id") @NotNull UUID id,
+                                                                                          @RequestParam(required = false, defaultValue = "0") @Min(0) int page,
+                                                                                          @RequestParam(required = false, defaultValue = "20") @Min(1) int size,
+                                                                                          @RequestParam(required = false, defaultValue = "DESC") @Valid SortDirection sortDirection) {
 
 
         return new ResponseEntity<>(planeService.getPlaneActions(id, PageRequest.of(page, size), sortDirection), OK);

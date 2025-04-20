@@ -1,9 +1,7 @@
 package com.example.planes.scheduling;
 
 import com.example.planes.dao.PlaneRepository;
-import com.example.planes.model.Plane;
-import com.example.planes.service.PlaneService;
-import jakarta.annotation.PostConstruct;
+import com.example.planes.entity.Plane;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
@@ -12,11 +10,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import org.quartz.SimpleScheduleBuilder;
-import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;

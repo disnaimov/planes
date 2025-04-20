@@ -1,7 +1,7 @@
 package com.example.planes.service.impl;
 
 import com.example.planes.dao.EmployeeRoleRepository;
-import com.example.planes.model.EmployeeRole;
+import com.example.planes.entity.EmployeeRole;
 import com.example.planes.service.EmployeeRoleService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
