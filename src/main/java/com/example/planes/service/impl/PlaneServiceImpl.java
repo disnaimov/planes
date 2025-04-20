@@ -16,6 +16,7 @@ import com.example.planes.exception.InvalidEntityDataException;
 import com.example.planes.filter.specification.PlaneSpecifications;
 import com.example.planes.model.Action;
 import com.example.planes.model.Plane;
+import com.example.planes.scheduling.TransactionalCapacityUpdateJob;
 import com.example.planes.model.Producer;
 import com.example.planes.service.PlaneService;
 import com.example.planes.service.model.PlaneCreateModel;
@@ -30,8 +31,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,6 +58,8 @@ public class PlaneServiceImpl implements PlaneService {
                     "CROSS JOIN service_points sp " +
                     "WHERE RANDOM() < 0.5 LIMIT 10";
     private final PlaneRepository planeRepository;
+    private final TransactionTemplate transactionTemplate;
+    private final TransactionalCapacityUpdateJob job;
     private final ProducerRepository producerRepository;
     private final ActionRepository actionRepository;
     private final JdbcTemplate jdbcTemplate;
@@ -331,5 +339,19 @@ public class PlaneServiceImpl implements PlaneService {
         actionResponseDto.setService_point_id(currentAction.getServicePoint().getId());
         actionResponseDto.setEmployee_id(currentAction.getEmployee().getId());
         return actionResponseDto;
+    }
+
+    @Override
+    public void transactionUpdate() {
+        transactionTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_SERIALIZABLE);
+        transactionTemplate.execute(status -> {
+            try {
+                job.schedule();
+                return null;
+            } catch (Exception e) {
+                status.setRollbackOnly();
+                throw e;
+            }
+        });
     }
 }

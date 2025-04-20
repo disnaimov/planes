@@ -83,4 +83,11 @@ public class PlaneRestController {
 
         return new ResponseEntity<>(planeService.getPlaneActions(id, PageRequest.of(page, size), sortDirection), OK);
     }
+
+    @RequestMapping(value = "/schedule", method = RequestMethod.PATCH)
+    public ResponseEntity<HttpStatus> transactionUpdate() {
+        planeService.transactionUpdate();
+        return new ResponseEntity<>(OK);
+    }
 }
+

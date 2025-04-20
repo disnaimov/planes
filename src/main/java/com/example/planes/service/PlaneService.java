@@ -20,4 +20,6 @@ public interface PlaneService {
     PlaneRegisterResponseModel registerPlane(UUID id);
     PlaneDeleteResponseModel delete(UUID id);
     PlaneTOResponseModel technicalService();
+    void technicalService();
+    void transactionUpdate();
 }

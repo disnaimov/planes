@@ -1,7 +1,7 @@
 package com.example.planes.dao;
 
-import com.example.planes.entity.enums.PlaneStatus;
-import com.example.planes.entity.Plane;
+import com.example.planes.enums.PlaneStatus;
+import com.example.planes.model.Plane;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
