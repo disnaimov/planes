@@ -1,0 +1,662 @@
+{
+	"info": {
+		"_postman_id": "48684846-f6a0-4d8d-b7dc-e6da7cf918c6",
+		"name": "Planes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24361778",
+		"_collection_link": "https://red-equinox-287317.postman.co/workspace/diplom~3c932f07-f8e8-45cf-930f-4be55905c903/collection/24361778-48684846-f6a0-4d8d-b7dc-e6da7cf918c6?action=share&source=collection_link&creator=24361778"
+	},
+	"item": [
+		{
+			"name": "create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Создан успешно\", function () {  \r",
+							"    pm.response.to.have.status(201); // Проверяем статус ответа 201 Created  \r",
+							"    let jsonData = pm.response.json();  \r",
+							"    pm.environment.set(\"planeId\", jsonData); // Сохраняем ID нового самолета  \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"planeId\", null); // убедимся, что у нас нет предыдущего ID  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \r\n    \"capacity\": 160,  \r\n    \"type\": \"cargo\",  \r\n    \"status\": \"flight\",  \r\n    \"technical_date\": \"2024-11-05T16:32:17\"  \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/planes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAll",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Список самолетов возвращается\", function () {  \r",
+							"    pm.response.to.have.status(200);  \r",
+							"    let jsonData = pm.response.json();  \r",
+							"    pm.expect(jsonData).to.be.an('array'); // Проверяем, что ответ - массив  \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes?page=&size=",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": ""
+						},
+						{
+							"key": "size",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getWithFilters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Фильтрация самолетов прошла успешно\", function () {  \r",
+							"    pm.response.to.have.status(200);  \r",
+							"    let jsonData = pm.response.json();  \r",
+							"    pm.expect(jsonData).to.be.an('array'); // Проверяем, что ответ - массив самолетов  \r",
+							"}); "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes/filter?capacity=160",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes",
+						"filter"
+					],
+					"query": [
+						{
+							"key": "capacity",
+							"value": "160"
+						},
+						{
+							"key": "type",
+							"value": "",
+							"disabled": true
+						},
+						{
+							"key": "status",
+							"value": "service",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "registerPlane",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Самолет зарегистрирован успешно\", function () {  \r",
+							"    pm.response.to.have.status(200); // Проверяем статус ответа 200 OK    \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes/{{planeId}} ",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes",
+						"{{planeId}} "
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "registerAfterRegistration",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Создан успешно\", function () {  \r",
+							"    pm.response.to.have.status(400); // Проверяем статус ответа 400 bad request \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes/{{planeId}} ",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes",
+						"{{planeId}} "
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Проверка ответа на успешное удаление\", function () {  \r",
+							"    pm.response.to.be.ok; // Ожидаем 204 No Content  \r",
+							"});   "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes/{{planeId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes",
+						"{{planeId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Проверка успешного выполнения технического обслуживания\", function () {  \r",
+							"    pm.response.to.be.ok; // Ожидаем 200 OK  \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes/service",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes",
+						"service"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createNegativeCapacity",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Создан успешно\", function () {  \r",
+							"    pm.response.to.have.status(400); // Проверяем статус ответа 400 bad request \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \r\n    \"capacity\": -1,  \r\n    \"type\": \"cargo\",  \r\n    \"status\": \"flight\",  \r\n    \"technical_date\": \"2024-11-05T16:32:17\"  \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/planes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createWrongType",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Создан успешно\", function () {  \r",
+							"    pm.response.to.have.status(400); // Проверяем статус ответа 400 bad request \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \r\n    \"capacity\": 100,  \r\n    \"type\": \"iii\",  \r\n    \"status\": \"flight\",  \r\n    \"technical_date\": \"2024-11-05T16:32:17\"  \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/planes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createWrongStatus",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Создан успешно\", function () {  \r",
+							"    pm.response.to.have.status(400); // Проверяем статус ответа 400 bad request \r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \r\n    \"capacity\": 100,  \r\n    \"type\": \"cargo\",  \r\n    \"status\": \"iii\",  \r\n    \"technical_date\": \"2024-11-05T16:32:17\"  \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/planes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deleteAfterDelete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Создан успешно\", function () {  \r",
+							"    pm.response.to.have.status(404); // Проверяем статус ответа 404 not found \r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes/{{planeId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes",
+						"{{planeId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "unauthorizedGet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Создан успешно\", function () {  \r",
+							"    pm.response.to.have.status(401); // Проверяем статус ответа 400 unauthorized\r",
+							"});  "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/planes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"planes"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "planeId",
+			"value": ""
+		}
+	]
+}
